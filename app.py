@@ -60,14 +60,14 @@ for ticker in tickers:
 df = pd.DataFrame(data)
 
 # Mostrar el dataframe con los datos recopilados en Streamlit
-st.write("### Datos Financieros Recopilados", df)
+st.write("### Financial Data", df)
 
 # Sección 2: Visualización de los Ratios Financieros
 df_ratios = df[['Ticker', 'Company', 'Sector', 'Industry', 'Country', 'P/E', 'P/BV', 'P/FCF', 'Dividend', 'Payout Ratio',
                 'ROE', 'ROA', 'Current Ratio', 'Long Term Debt / Capital', 'Debt / Capital', 'Operating Margin', 
                 'Profit Margin', 'Market Capitalization', 'Shares Outstanding', 'Free Cash Flow', 'CAPEX']]
 
-st.write("### Ratios Financieros", df_ratios)
+st.write("### Financial Ratios", df_ratios)
 
 # Sección 3: Cálculo de WACC, ROIC y la Conclusión sobre la Creación de Valor
 def calculate_wacc_roic_and_conclusion(ticker, balance_sheet, financials, cashflow, info):
@@ -77,6 +77,11 @@ def calculate_wacc_roic_and_conclusion(ticker, balance_sheet, financials, cashfl
     cash = balance_sheet.loc['Cash'][-1] if 'Cash' in balance_sheet.index else 0
     ebit = financials.loc['EBIT'][-1] if 'EBIT' in financials.index else 0
     market_cap = info.get('marketCap', 0)
+    
+    # Evitar la división por cero
+    total_value = equity + total_debt
+    if total_value == 0:
+        return None, None, "Total value is zero, cannot calculate WACC and ROIC"
     
     # Estimación externa de la Tasa Libre de Riesgo y Beta
     risk_free_rate = 0.03  # Tasa libre de riesgo (ejemplo: 3%)
@@ -93,7 +98,6 @@ def calculate_wacc_roic_and_conclusion(ticker, balance_sheet, financials, cashfl
     cost_of_equity = risk_free_rate + beta * (market_return - risk_free_rate)
     
     # Cálculo de WACC
-    total_value = equity + total_debt  # Valor de la empresa
     wacc = (equity / total_value * cost_of_equity) + (total_debt / total_value * cost_of_debt * (1 - tax_rate))
     
     # Cálculo de ROIC
